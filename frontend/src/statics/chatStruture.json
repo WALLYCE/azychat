@@ -1,0 +1,42 @@
+{
+    "users":{
+        "USERID1":{
+            "name": "wallyce",
+             "email": "wallyce@teste.com",
+             "online": true
+        },
+        "USERID2":{
+            "name": "Kim",
+             "email": "kim@teste.com",
+             "online": true
+        }
+    },
+
+    "chats":{
+        "USERID1":{
+            "USERID2":{
+                "MESSAGEID1":{
+                    "text": "Olá como vai você?",
+                    "from": "Ele"
+                },
+                "MESSAGEID2":{
+                    "text": "Olá bem e você?",
+                    "from": "Eu"
+                }
+            }
+        },
+        "USERID2":{
+            "USERID1":{
+                "MESSAGEID1":{
+                    "text": "Olá como vai você?",
+                    "from": "Eu"
+                },
+                "MESSAGEID2":{
+                    "text": "Olá bem e você?",
+                    "from": "Ele"
+                }
+            }
+        }
+
+    }
+}
