@@ -1,20 +1,21 @@
 {
     "users":{
-        "USERID1":{
-            "name": "wallyce",
-             "email": "wallyce@teste.com",
-             "online": true
+        "1":{
+            "name": "Admin",
+             "email": "admin@teste.com",
+             "online": false
         },
-        "USERID2":{
-            "name": "Kim",
-             "email": "kim@teste.com",
-             "online": true
+        "28":{
+            "name": "maria",
+             "email": "maria@teste.com",
+             "online": false
         }
     },
 
     "chats":{
         "USERID1":{
             "USERID2":{
+                
                 "MESSAGEID1":{
                     "text": "Olá como vai você?",
                     "from": "Ele"

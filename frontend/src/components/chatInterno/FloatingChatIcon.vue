@@ -1,49 +1,61 @@
 <template>
-  <div>
+
+  <div style="overflow-y: hidden">
     <q-btn
-      class="drag-button"
+      :class="notificationClass"
       fab
-      color="primary"
+      :color="colorbuttom"
       icon="chat"
+      :label="labelChat"
       @click="openModal"
-      :style="{ bottom: position.bottom, right: position.right, position: 'fixed', 'z-index': 9999 }"
+      :style="{ bottom: position.bottom, right: position.right, position: 'fixed', 'z-index': 9999}"
     />
-    <q-dialog v-model="showModal" transition-show="rotate" transition-hide="rotate">
-      <q-card style="width: 700px; max-width: 80vw; height: 70vh; overflow-y: hidden;">
-        <cContacts v-if="contatos" @informacao="receberInformacaoContatos"/>
-        <cChat v-if="chat" @informacao="receberInformacaoChat"/>
+ 
+    
+    <q-dialog v-model="showModal" transition-show="rotate" transition-hide="rotate" style="overflow-y: hidden">
+      <q-card style="width: 700px; max-width: 80vw; height: 70vh; overflow:hidden">
+        <cContacts v-if="contatos" @informacao="receberInformacaoContatos" />
+        <cChat v-if="chat" @informacao="receberInformacaoChat" style="overflow-y: hidden"/>
       </q-card>
     </q-dialog>
   </div>
+
 </template>
 
 <script>
 import cContacts from './cContacts.vue';
 import cChat from './cChat.vue';
-import { socketIO } from 'src/utils/socket';
-const socket = socketIO()
+import alertSound from 'src/assets/sound.mp3'
+
 
 export default {
   name: 'FloatingChatIcon',
-  components: { cContacts, cChat },
+  components: { cContacts, cChat, alertSound },
   data() {
     return {
       position: { bottom: '50px', right: '50px' },
       showModal: false,
       contatos: true,
       chat: false,
-      usuario: {}
+      usuario: {},
+      habilitarChat: false
     };
   },
   methods: {
     openModal() {
-      console.log("Abrindo modal...");
+      if(this.habilitarChat == true){
       this.showModal = !this.showModal;
+      }else{
+        this.$store.dispatch('getMessagesFirebase');
+        this.habilitarChat = true;
+      }
     },
     closeModal() {
+      
       this.showModal = false;
     },
     receberInformacaoContatos(dados){
+   
       this.chat = dados.chat;
       this.contatos = dados.contatos;
     },
@@ -52,50 +64,58 @@ export default {
       this.contatos = dados.contatos;
     },
     atualizarUsuario(){
-      
       this.usuario = JSON.parse(localStorage.getItem('usuario'));
+       this.$store.dispatch('setUserChat', this.usuario);
+    }
+    
 
-    },
-    usersOnline(){
-      this.socket.on('connect', () => {
-        this.socket.emit('updateUsers');
-      });
-    },
-     conectarSocket () {
-      console.log(this.usuario.tenantId)
-      this.usuario = JSON.parse(localStorage.getItem('usuario'))
-      console.log(this.usuario)
-      socket.on('connect', ()=> {
-        socket.emit('Im-Online', this.usuario.userId)
-        socket.on(`updateUsersOnline`, data => {
-          console.log(data);
-        //this.$store.commit('SET_USERS_APP', data)
-      })
-      })
- 
-    },
-  },
-  async mounted() {
-    this.usuario = await JSON.parse(localStorage.getItem('usuario'));
-    await this.conectarSocket(this.usuario);
+    
+
+    
   },
   watch: {
-    '$store.state.usersApp': function (newValue, oldValue) {
-      console.log(newValue);
+    showModal(newValue, oldValue) {
+      if (newValue == false) {
+        this.$store.dispatch('chatFechado');
+        this.chat = false;
+        this.contatos = true;
+      }
     }
   },
-  destroyed () {
-    socket.emit(`${this.usuario.tenantId}:setUserIdle`);
-    socket.disconnect()
+  mounted () {
+  this.atualizarUsuario();
+
+  },
+  beforeDestroy() {
+    // Remova o ouvinte de evento
+
+  },
+  computed: {
+    temNotificacoes() {
+      return Object.values(this.$store.state.chatInterno.notificacoes).some(valor => valor > 0);
+
+    },
+    notificationClass() {
+      // Retorna a classe com base no resultado de 'temNotificacoes'
+      return this.temNotificacoes ? 'notification-badge' : 'primary';
+    },
+     colorbuttom() {
+      // Retorna a classe com base no resultado de 'temNotificacoes'
+      if(this.habilitarChat == false){
+        return 'black';
+      }else{
+      return this.temNotificacoes ? 'red' : 'primary';
+      }
+    },
+    Label() {
+      // Retorna a classe com base no resultado de 'temNotificacoes'
+      return this.temNotificacoes ? 'red' : 'primary';
+    },
+    labelChat(){
+      return this.habilitarChat? "Chat Habilitado":"Clique para Habilitar o Chat";
+    }
   }
-}
-</script>
-
-<style scoped>
-.drag-button {
-  cursor: pointer;
-}
-</style>
+};
 
 </script>
 
@@ -103,14 +123,27 @@ export default {
 .drag-button {
   cursor: pointer;
 }
-</style>
 
+.notification-badge {
+    animation: pulse 1s infinite;
+    background-color: red; /* Aplica a animação 'pulse' com duração de 1 segundo e repetição infinita */
+}
 
-
-</script>
-
-<style scoped>
-.drag-button {
-  cursor: pointer;
+@keyframes pulse {
+    0% {
+        transform: scale(0.9); /* Diminui o tamanho inicialmente */
+        opacity: 0.7; /* Opacidade inicial */
+    }
+    50% {
+        transform: scale(1); /* Retorna ao tamanho normal no meio da animação */
+        opacity: 1; /* Opacidade máxima */
+    }
+    100% {
+        transform: scale(0.9); /* Diminui o tamanho novamente no final da animação */
+        opacity: 0.7; /* Opacidade volta ao valor inicial */
+    }
 }
 </style>
+
+
+

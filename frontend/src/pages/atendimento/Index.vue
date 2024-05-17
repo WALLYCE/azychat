@@ -1131,6 +1131,7 @@ export default {
     }
   },
   async mounted () {
+
     this.$root.$on('infor-cabecalo-chat:acao-menu', this.setValueMenu)
     this.$root.$on('update-ticket:info-contato', this.setValueMenuContact)
     this.socketTicketList()
